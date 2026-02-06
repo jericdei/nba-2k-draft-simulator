@@ -16,11 +16,13 @@ export default function Draft({ teams }: { teams: number }) {
     handleResetAll,
     handleNameChange,
     handleDraft,
+    handleUndoPick,
     currentPickIndex,
     currentDrafterOrder,
     draftedIds,
     isGameOver,
     canDraft,
+    canUndo,
   } = useDraftState(teams);
 
   const { players, loading, error } = usePlayers(positionFilter);
@@ -39,6 +41,8 @@ export default function Draft({ teams }: { teams: number }) {
         isGameOver={isGameOver}
         onResetOrder={handleReset}
         onResetAll={handleResetAll}
+        onUndoPick={handleUndoPick}
+        canUndo={canUndo}
       />
 
       <div

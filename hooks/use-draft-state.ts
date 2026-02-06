@@ -157,6 +157,7 @@ export function useDraftState(teams: number) {
     !isGameOver &&
     currentDrafterOrder != null &&
     currentTeamSize < MAX_PLAYERS_PER_TEAM;
+  const canUndo = totalPicks > 0 && pickOrder.length > 0;
 
   const handleDraft = useCallback(
     (player: ApiPlayer) => {
@@ -182,17 +183,36 @@ export function useDraftState(teams: number) {
     [canDraft, currentDrafterOrder, draftedIds],
   );
 
+  const handleUndoPick = useCallback(() => {
+    if (!canUndo) return;
+    const lastPickIndex = totalPicks - 1;
+    const drafterOrder = getDrafterOrderAtPick(lastPickIndex, pickOrder);
+    setState((prev) => {
+      const prevPicks = prev.picksByDrafter[drafterOrder] ?? [];
+      if (prevPicks.length === 0) return prev;
+      return {
+        ...prev,
+        picksByDrafter: {
+          ...prev.picksByDrafter,
+          [drafterOrder]: prevPicks.slice(0, -1),
+        },
+      };
+    });
+  }, [canUndo, pickOrder, totalPicks]);
+
   return {
     state,
     handleReset,
     handleResetAll,
     handleNameChange,
     handleDraft,
+    handleUndoPick,
     pickOrder,
     currentPickIndex,
     currentDrafterOrder,
     draftedIds,
     isGameOver,
     canDraft,
+    canUndo,
   };
 }

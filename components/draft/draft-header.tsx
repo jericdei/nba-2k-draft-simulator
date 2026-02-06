@@ -11,6 +11,8 @@ interface DraftHeaderProps {
   isGameOver: boolean;
   onResetOrder: () => void;
   onResetAll: () => void;
+  onUndoPick: () => void;
+  canUndo: boolean;
 }
 
 export function DraftHeader({
@@ -20,11 +22,16 @@ export function DraftHeader({
   isGameOver,
   onResetOrder,
   onResetAll,
+  onUndoPick,
+  canUndo,
 }: DraftHeaderProps) {
   return (
     <>
       <div className="flex items-center justify-center gap-4 flex-wrap">
         <h1 className="text-2xl font-bold">Draft Board</h1>
+        <Button variant="outline" size="sm" onClick={onUndoPick} disabled={!canUndo}>
+          Undo pick
+        </Button>
         <Button variant="outline" size="sm" onClick={onResetOrder}>
           Reset order
         </Button>
