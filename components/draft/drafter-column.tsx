@@ -27,9 +27,8 @@ export function DrafterColumn({
     >
       <CardHeader className="pb-2 space-y-1">
         <div className="text-xs text-muted-foreground font-medium flex justify-between items-center">
-          <span>Pick #{drafter.draftOrder}</span>
           <span>
-            {count}/{MAX_PLAYERS_PER_TEAM}
+            {count}/{MAX_PLAYERS_PER_TEAM} Players
           </span>
         </div>
         <Input
@@ -43,9 +42,7 @@ export function DrafterColumn({
         <div className="text-xs text-muted-foreground mb-1">Picks</div>
         <div className="flex-1 min-h-[140px] rounded border border-border bg-muted/30 p-2 overflow-y-auto">
           {picks.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">
-              No picks yet
-            </p>
+            <p className="text-xs text-muted-foreground italic">No picks yet</p>
           ) : (
             <ul className="space-y-1">
               {picks.map((p) => (
