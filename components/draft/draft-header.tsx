@@ -3,6 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { MAX_PLAYERS_PER_TEAM } from "@/lib/draft";
 import type { Drafter } from "@/lib/draft";
+import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DraftHeaderProps {
   currentDrafterOrder: number | null;
@@ -30,6 +42,9 @@ export function DraftHeader({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">Draft Board</h1>
         <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/">Back</Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -38,12 +53,28 @@ export function DraftHeader({
           >
             Undo pick
           </Button>
-          <Button variant="outline" size="sm" onClick={onResetOrder}>
-            Reset order
-          </Button>
-          <Button variant="outline" size="sm" onClick={onResetAll}>
-            Reset all
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                Reset all
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset the entire draft?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This clears all team names, draft order, and picks for this
+                  draft.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={onResetAll}>
+                  Reset all
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

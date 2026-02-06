@@ -124,3 +124,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Bigger number input spinners on the start page */
+.start-number-input::-webkit-inner-spin-button,
+.start-number-input::-webkit-outer-spin-button {
+  height: 3.25rem;
+  width: 3.25rem;
+}

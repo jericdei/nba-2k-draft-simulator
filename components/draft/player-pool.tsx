@@ -1,18 +1,12 @@
 "use client";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { ApiPlayer } from "@/lib/api";
 
 const POSITION_OPTIONS = [
-  { value: "all", label: "All positions" },
+  { value: "all", label: "All" },
   { value: "PG", label: "PG" },
   { value: "SG", label: "SG" },
   { value: "SF", label: "SF" },
@@ -58,22 +52,20 @@ export function PlayerPool({
           <div className="text-sm font-semibold">Player pool</div>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <Select
-          value={positionFilter}
-          onValueChange={onPositionChange}
-          disabled={loading}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Position" />
-          </SelectTrigger>
-          <SelectContent>
-            {POSITION_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2">
+          {POSITION_OPTIONS.map((opt) => (
+            <Button
+              key={opt.value}
+              type="button"
+              variant={positionFilter === opt.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => onPositionChange(opt.value)}
+              disabled={loading}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="h-[320px] rounded border border-border bg-muted/20 p-3 flex flex-col">
