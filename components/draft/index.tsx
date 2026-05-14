@@ -6,7 +6,7 @@ import { usePlayers } from "@/hooks/use-players";
 import { DraftHeader } from "./draft-header";
 import { DrafterColumn } from "./drafter-column";
 import { PlayerPool } from "./player-pool";
-import { getTeams, type ApiTeam } from "@/lib/api";
+import { getTeams, type ApiPlayer, type ApiTeam } from "@/lib/api";
 import type { ApiTeamType } from "@/lib/team-type";
 import {
   loadNbaPickTeams,
@@ -147,7 +147,7 @@ export default function Draft({
 
   const availablePlayers = useMemo(() => {
     const seen = new Set<string>();
-    const out: typeof players = [];
+    const out: ApiPlayer[] = [];
     for (const p of players) {
       if (draftedIds.has(p._id)) continue;
       if (seen.has(p._id)) continue;

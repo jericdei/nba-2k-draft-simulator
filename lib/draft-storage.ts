@@ -138,7 +138,7 @@ export function loadNbaPickTeams(teams: number): Record<number, string> {
         .map(([k, v]) => [parseInt(k, 10), v])
         .filter(
           ([k, v]) =>
-            !isNaN(k) && k >= 0 && typeof v === "string" && v.trim() !== "",
+            !isNaN(Number(k)) && Number(k) >= 0 && typeof v === "string" && v.trim() !== "",
         ) as [number, string][],
     );
   } catch {
