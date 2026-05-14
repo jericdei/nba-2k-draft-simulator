@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseApiTeamType } from "@/lib/team-type";
 
 const POSITIONS = ["PG", "SG", "SF", "PF", "C"] as const;
 
@@ -12,12 +13,18 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const position = searchParams.get("position");
+  const team = searchParams.get("team");
+  const teamType = parseApiTeamType(searchParams.get("teamType"));
   const positionParam =
     position && POSITIONS.includes(position as (typeof POSITIONS)[number])
       ? `&position=${encodeURIComponent(position)}`
       : "";
+  const teamParam =
+    team && team.trim() !== ""
+      ? `&team=${encodeURIComponent(team.trim())}`
+      : "";
 
-  const playersUrl = `${baseUrl}/players?limit=100${positionParam}`;
+  const playersUrl = `${baseUrl}/players?teamType=${teamType}&limit=100${positionParam}${teamParam}`;
   const fetchOptions: RequestInit = {
     headers: { "X-API-Key": apiKey },
     next: { revalidate: 60 },

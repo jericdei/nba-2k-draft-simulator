@@ -4,6 +4,7 @@ import { MAX_PLAYERS_PER_TEAM } from "./draft";
 const STORAGE_KEY_NAMES = "nba-draft-names";
 const STORAGE_KEY_ORDER = "nba-draft-order";
 const STORAGE_KEY_PICKS = "nba-draft-picks";
+const STORAGE_KEY_NBA_PICK_TEAMS = "nba-draft-nba-pick-teams";
 
 export function getNamesKey(teams: number): string {
   return `${STORAGE_KEY_NAMES}-${teams}`;
@@ -118,4 +119,53 @@ export function generateRandomOrder(teams: number): number[] {
   return Array.from({ length: teams }, (_, i) => i + 1).sort(
     () => Math.random() - 0.5,
   );
+}
+
+export function getNbaPickTeamsKey(teams: number): string {
+  return `${STORAGE_KEY_NBA_PICK_TEAMS}-${teams}`;
+}
+
+/** Per-pick NBA franchise name when using team randomizer (pick index → teamName). */
+export function loadNbaPickTeams(teams: number): Record<number, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(getNbaPickTeamsKey(teams));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object") return {};
+    return Object.fromEntries(
+      Object.entries(parsed)
+        .map(([k, v]) => [parseInt(k, 10), v])
+        .filter(
+          ([k, v]) =>
+            !isNaN(k) && k >= 0 && typeof v === "string" && v.trim() !== "",
+        ) as [number, string][],
+    );
+  } catch {
+    return {};
+  }
+}
+
+export function saveNbaPickTeams(
+  teams: number,
+  map: Record<number, string>,
+) {
+  if (typeof window === "undefined") return;
+  try {
+    const keyed = Object.fromEntries(
+      Object.entries(map).map(([k, v]) => [String(k), v]),
+    );
+    localStorage.setItem(getNbaPickTeamsKey(teams), JSON.stringify(keyed));
+  } catch {
+    // ignore
+  }
+}
+
+export function clearNbaPickTeams(teams: number) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(getNbaPickTeamsKey(teams));
+  } catch {
+    // ignore
+  }
 }

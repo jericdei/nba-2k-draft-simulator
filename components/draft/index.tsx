@@ -1,14 +1,35 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useDraftState } from "@/hooks/use-draft-state";
 import { usePlayers } from "@/hooks/use-players";
 import { DraftHeader } from "./draft-header";
 import { DrafterColumn } from "./drafter-column";
 import { PlayerPool } from "./player-pool";
+import { getTeams, type ApiTeam } from "@/lib/api";
+import type { ApiTeamType } from "@/lib/team-type";
+import {
+  loadNbaPickTeams,
+  saveNbaPickTeams,
+  clearNbaPickTeams,
+} from "@/lib/draft-storage";
 
-export default function Draft({ teams }: { teams: number }) {
+export default function Draft({
+  teams,
+  nbaTeamRandom,
+  teamType,
+}: {
+  teams: number;
+  nbaTeamRandom: boolean;
+  teamType: ApiTeamType;
+}) {
   const [positionFilter, setPositionFilter] = useState("all");
+  const [nbaTeams, setNbaTeams] = useState<ApiTeam[]>([]);
+  const [nbaTeamsError, setNbaTeamsError] = useState<string | null>(null);
+  const [nbaTeamsLoading, setNbaTeamsLoading] = useState(nbaTeamRandom);
+  const [nbaFranchiseForPick, setNbaFranchiseForPick] = useState<string | null>(
+    null,
+  );
 
   const {
     state,
@@ -25,12 +46,130 @@ export default function Draft({ teams }: { teams: number }) {
     canUndo,
   } = useDraftState(teams);
 
-  const { players, loading, error } = usePlayers(positionFilter);
+  useEffect(() => {
+    if (!nbaTeamRandom) {
+      setNbaTeamsLoading(false);
+      setNbaTeams([]);
+      setNbaTeamsError(null);
+      setNbaFranchiseForPick(null);
+      return;
+    }
+    let cancelled = false;
+    setNbaTeamsLoading(true);
+    setNbaTeamsError(null);
+    getTeams({ teamType })
+      .then((list) => {
+        if (cancelled) return;
+        if (list.length === 0) {
+          setNbaTeams([]);
+          setNbaTeamsError("No NBA teams returned from the API.");
+          return;
+        }
+        setNbaTeams(list);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setNbaTeamsError(
+            e instanceof Error ? e.message : "Failed to load NBA teams",
+          );
+          setNbaTeams([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setNbaTeamsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [nbaTeamRandom, teamType]);
 
-  const availablePlayers = useMemo(
-    () => players.filter((p) => !draftedIds.has(p._id)),
-    [players, draftedIds],
+  useEffect(() => {
+    if (!nbaTeamRandom) {
+      setNbaFranchiseForPick(null);
+      return;
+    }
+    if (nbaTeams.length === 0) {
+      setNbaFranchiseForPick(null);
+      return;
+    }
+    if (isGameOver) {
+      setNbaFranchiseForPick(null);
+      return;
+    }
+    const saved = loadNbaPickTeams(teams);
+    const existing = saved[currentPickIndex];
+    if (existing) {
+      setNbaFranchiseForPick(existing);
+      return;
+    }
+    const choice =
+      nbaTeams[Math.floor(Math.random() * nbaTeams.length)]!.teamName;
+    saveNbaPickTeams(teams, { ...saved, [currentPickIndex]: choice });
+    setNbaFranchiseForPick(choice);
+  }, [nbaTeamRandom, nbaTeams, currentPickIndex, isGameOver, teams]);
+
+  const skipPlayers = useMemo(
+    () =>
+      nbaTeamRandom &&
+      (nbaTeamsLoading ||
+        !!nbaTeamsError ||
+        nbaTeams.length === 0 ||
+        !nbaFranchiseForPick ||
+        isGameOver),
+    [
+      nbaTeamRandom,
+      nbaTeamsLoading,
+      nbaTeamsError,
+      nbaTeams.length,
+      nbaFranchiseForPick,
+      isGameOver,
+    ],
   );
+
+  const { players, loading: playersLoading, error: playersError } =
+    usePlayers(positionFilter, {
+      team: nbaTeamRandom ? (nbaFranchiseForPick ?? undefined) : undefined,
+      skip: skipPlayers,
+      teamType,
+    });
+
+  const poolError = nbaTeamsError ?? playersError;
+  const poolLoading =
+    nbaTeamRandom &&
+    (nbaTeamsLoading ||
+      (!nbaTeamsError &&
+        nbaTeams.length > 0 &&
+        !isGameOver &&
+        nbaFranchiseForPick == null)) &&
+    !isGameOver
+      ? true
+      : !skipPlayers && playersLoading;
+
+  const availablePlayers = useMemo(() => {
+    const seen = new Set<string>();
+    const out: typeof players = [];
+    for (const p of players) {
+      if (draftedIds.has(p._id)) continue;
+      if (seen.has(p._id)) continue;
+      seen.add(p._id);
+      out.push(p);
+    }
+    return out;
+  }, [players, draftedIds]);
+
+  const clearRandomTeams = useCallback(() => {
+    clearNbaPickTeams(teams);
+  }, [teams]);
+
+  const onResetOrder = useCallback(() => {
+    clearRandomTeams();
+    handleReset();
+  }, [clearRandomTeams, handleReset]);
+
+  const onResetAll = useCallback(() => {
+    clearRandomTeams();
+    handleResetAll();
+  }, [clearRandomTeams, handleResetAll]);
 
   return (
     <div className="min-h-screen p-4 flex flex-col gap-6">
@@ -39,10 +178,13 @@ export default function Draft({ teams }: { teams: number }) {
         currentPickIndex={currentPickIndex}
         drafters={state.drafters}
         isGameOver={isGameOver}
-        onResetOrder={handleReset}
-        onResetAll={handleResetAll}
+        onResetOrder={onResetOrder}
+        onResetAll={onResetAll}
         onUndoPick={handleUndoPick}
         canUndo={canUndo}
+        nbaFranchiseForPick={
+          nbaTeamRandom && !isGameOver ? nbaFranchiseForPick : null
+        }
       />
 
       <div
@@ -64,8 +206,8 @@ export default function Draft({ teams }: { teams: number }) {
 
       <PlayerPool
         players={availablePlayers}
-        loading={loading}
-        error={error}
+        loading={poolLoading}
+        error={poolError}
         positionFilter={positionFilter}
         onPositionChange={setPositionFilter}
         availableCount={availablePlayers.length}

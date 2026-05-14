@@ -25,6 +25,8 @@ interface DraftHeaderProps {
   onResetAll: () => void;
   onUndoPick: () => void;
   canUndo: boolean;
+  /** When set, shows the NBA franchise pool for the current pick (team randomizer). */
+  nbaFranchiseForPick?: string | null;
 }
 
 export function DraftHeader({
@@ -36,6 +38,7 @@ export function DraftHeader({
   onResetAll,
   onUndoPick,
   canUndo,
+  nbaFranchiseForPick,
 }: DraftHeaderProps) {
   return (
     <>
@@ -79,11 +82,18 @@ export function DraftHeader({
       </div>
 
       {currentDrafterOrder != null && !isGameOver && (
-        <div className="text-center text-sm text-muted-foreground sm:text-left">
-          Pick #{currentPickIndex + 1} ·{" "}
-          {drafters.find((d) => d.draftOrder === currentDrafterOrder)?.name ??
-            `Team ${currentDrafterOrder}`}{" "}
-          is on the clock
+        <div className="flex flex-col gap-1 text-center text-sm text-muted-foreground sm:text-left">
+          <div>
+            Pick #{currentPickIndex + 1} ·{" "}
+            {drafters.find((d) => d.draftOrder === currentDrafterOrder)?.name ??
+              `Team ${currentDrafterOrder}`}{" "}
+            is on the clock
+          </div>
+          {nbaFranchiseForPick ? (
+            <div className="font-medium text-foreground">
+              NBA pool: {nbaFranchiseForPick}
+            </div>
+          ) : null}
         </div>
       )}
 

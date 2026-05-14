@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
-import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 
-const jetbrainsMono = JetBrains_Mono({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,10 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={jetbrainsMono.variable}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
-      >
+    <html lang="en" className={manrope.variable}>
+      <body className="font-sans antialiased dark">
         <Toaster />
         {children}
       </body>

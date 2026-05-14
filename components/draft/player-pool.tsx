@@ -87,6 +87,20 @@ export function PlayerPool({
                     disabled={!canDraft}
                     className="w-full cursor-pointer flex items-center gap-2 py-2 px-3 rounded border border-border bg-background text-sm text-left transition-colors hover:bg-muted hover:border-primary/50 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
                   >
+                    <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-sm bg-muted">
+                      {typeof player.teamImg === "string" && player.teamImg ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- remote API URLs, no size optimization
+                        <img
+                          src={player.teamImg}
+                          alt={
+                            player.team
+                              ? `${player.team} logo`
+                              : "Team logo"
+                          }
+                          className="h-full w-full object-contain p-0.5"
+                        />
+                      ) : null}
+                    </span>
                     <Badge
                       variant="secondary"
                       className="shrink-0 font-semibold tabular-nums"
