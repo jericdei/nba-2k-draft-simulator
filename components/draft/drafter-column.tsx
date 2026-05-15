@@ -56,9 +56,23 @@ export function DrafterColumn({
                   >
                     {p.overall}
                   </Badge>
-                  <span className="font-medium truncate min-w-0">{p.name}</span>
-                  <span className="text-muted-foreground shrink-0">
-                    {p.positions.join("/")}
+                  <div className="min-w-0 flex-1 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
+                    <span className="font-medium truncate">{p.name}</span>
+                    <span className="text-muted-foreground shrink-0">
+                      {p.positions.join("/")}
+                    </span>
+                  </div>
+                  <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-sm bg-muted">
+                    {typeof p.teamImg === "string" && p.teamImg ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- remote API URLs
+                      <img
+                        src={p.teamImg}
+                        alt={
+                          p.team ? `${p.team} logo` : "Team logo"
+                        }
+                        className="h-full w-full object-contain p-0.5"
+                      />
+                    ) : null}
                   </span>
                 </li>
               ))}

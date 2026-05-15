@@ -10,6 +10,8 @@ export interface DraftedPlayer {
   name: string;
   positions: string[];
   overall: number;
+  team?: string;
+  teamImg?: string;
 }
 
 export type DraftState = {

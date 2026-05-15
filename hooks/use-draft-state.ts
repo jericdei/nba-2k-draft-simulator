@@ -168,6 +168,9 @@ export function useDraftState(teams: number) {
         name: player.name,
         positions: player.positions ?? [],
         overall: player.overall,
+        team: player.team,
+        teamImg:
+          typeof player.teamImg === "string" ? player.teamImg : undefined,
       };
       setState((prev) => ({
         ...prev,
