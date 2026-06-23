@@ -142,6 +142,17 @@ export function useDraftState(teams: number) {
       ),
     [state.drafters, state.picksByDrafter],
   );
+  const draftedNames = useMemo(
+    () =>
+      new Set(
+        state.drafters.flatMap((d) =>
+          (state.picksByDrafter[d.draftOrder] ?? []).map((p) =>
+            p.name.toLowerCase(),
+          ),
+        ),
+      ),
+    [state.drafters, state.picksByDrafter],
+  );
   const isGameOver =
     state.drafters.length > 0 &&
     state.drafters.every(
@@ -161,7 +172,7 @@ export function useDraftState(teams: number) {
 
   const handleDraft = useCallback(
     (player: ApiPlayer) => {
-      if (!canDraft || draftedIds.has(player._id)) return;
+      if (!canDraft || draftedIds.has(player._id) || draftedNames.has(player.name.toLowerCase())) return;
       const drafterOrder = currentDrafterOrder!;
       const drafted: DraftedPlayer = {
         id: player._id,
@@ -183,7 +194,7 @@ export function useDraftState(teams: number) {
         },
       }));
     },
-    [canDraft, currentDrafterOrder, draftedIds],
+    [canDraft, currentDrafterOrder, draftedIds, draftedNames],
   );
 
   const handleUndoPick = useCallback(() => {
@@ -214,6 +225,7 @@ export function useDraftState(teams: number) {
     currentPickIndex,
     currentDrafterOrder,
     draftedIds,
+    draftedNames,
     isGameOver,
     canDraft,
     canUndo,

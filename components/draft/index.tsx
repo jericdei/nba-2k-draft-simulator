@@ -41,6 +41,7 @@ export default function Draft({
     currentPickIndex,
     currentDrafterOrder,
     draftedIds,
+    draftedNames,
     isGameOver,
     canDraft,
     canUndo,
@@ -102,8 +103,16 @@ export default function Draft({
       setNbaFranchiseForPick(existing);
       return;
     }
-    const choice =
-      nbaTeams[Math.floor(Math.random() * nbaTeams.length)]!.teamName;
+    const cycleStart =
+      Math.floor(currentPickIndex / nbaTeams.length) * nbaTeams.length;
+    const usedInCycle = new Set<string>();
+    for (let i = cycleStart; i < currentPickIndex; i++) {
+      const t = saved[i];
+      if (t) usedInCycle.add(t);
+    }
+    const pool = nbaTeams.filter((t) => !usedInCycle.has(t.teamName));
+    const source = pool.length > 0 ? pool : nbaTeams;
+    const choice = source[Math.floor(Math.random() * source.length)]!.teamName;
     saveNbaPickTeams(teams, { ...saved, [currentPickIndex]: choice });
     setNbaFranchiseForPick(choice);
   }, [nbaTeamRandom, nbaTeams, currentPickIndex, isGameOver, teams]);
@@ -146,16 +155,21 @@ export default function Draft({
       : !skipPlayers && playersLoading;
 
   const availablePlayers = useMemo(() => {
-    const seen = new Set<string>();
+    const seenIds = new Set<string>();
+    const seenNames = new Set<string>();
     const out: ApiPlayer[] = [];
     for (const p of players) {
+      const lowerName = p.name.toLowerCase();
       if (draftedIds.has(p._id)) continue;
-      if (seen.has(p._id)) continue;
-      seen.add(p._id);
+      if (draftedNames.has(lowerName)) continue;
+      if (seenIds.has(p._id)) continue;
+      if (seenNames.has(lowerName)) continue;
+      seenIds.add(p._id);
+      seenNames.add(lowerName);
       out.push(p);
     }
     return out;
-  }, [players, draftedIds]);
+  }, [players, draftedIds, draftedNames]);
 
   const clearRandomTeams = useCallback(() => {
     clearNbaPickTeams(teams);
